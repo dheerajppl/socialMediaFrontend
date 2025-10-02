@@ -13,6 +13,7 @@ const useGetAllPost = () => {
     }, []);
     useEffect(() => {
         if(resPost?.isSuccess){
+            console.log("resPost", resPost?.data?.data)
             dispatch(setPosts(resPost?.data?.data));
         }
         if(resPost?.isError){

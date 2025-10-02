@@ -1,4 +1,64 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-  
+
+/* Global dark mode: pure black */
+html {
+  color-scheme: dark;
+}
+
+body {
+  @apply min-h-screen text-white font-sans;
+  background-color: rgb(0, 0, 0);
+}
+
+/* Links */
+a {
+  @apply text-blue-400 hover:text-blue-500;
+}
+
+/* Headings and text */
+h1, h2, h3, h4, h5, h6 {
+  @apply text-white;
+}
+p, span, li {
+  @apply text-gray-300;
+}
+
+/* Cards / posts */
+.card, .post {
+  @apply text-white rounded-md shadow-md border border-gray-800 p-4;
+  background-color: rgb(0, 0, 0);
+}
+
+/* Buttons (like, follow) */
+button {
+  @apply text-white border border-gray-700 rounded px-3 py-1 font-semibold transition;
+  background-color: rgb(0, 0, 0);
+}
+button:hover {
+  background-color: rgb(30,30,30);
+}
+
+/* Inputs (search, comments) */
+input, textarea {
+  @apply text-white border border-gray-700 rounded px-3 py-2 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-600;
+  background-color: rgb(0,0,0);
+}
+
+/* Navbar / top bar */
+.navbar {
+  @apply border-b border-gray-700 shadow-sm;
+  background-color: rgb(0,0,0);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-700 rounded;
+}
+::-webkit-scrollbar-track {
+  background-color: rgb(0,0,0);
+}

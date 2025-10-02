@@ -4,9 +4,9 @@ import postSlice from './postSlice.js';
 import socketSlice from "./socketSlice.js"
 import chatSlice from "./chatSlice.js";
 import rtnSlice from "./rtnSlice.js";
-import { authAPi, postApi, userApi, messageApi } from "@/service/index.js";
+import { authAPi, postApi, userApi, messageApi, fileApi } from "@/service/index.js";
 
-import { 
+import {
     persistReducer,
     FLUSH,
     REHYDRATE,
@@ -25,27 +25,28 @@ const persistConfig = {
 }
 
 const rootReducer = combineReducers({
-    auth:authSlice,
-    post:postSlice,
-    socketio:socketSlice,
-    chat:chatSlice,
-    realTimeNotification:rtnSlice,
+    auth: authSlice,
+    post: postSlice,
+    socketio: socketSlice,
+    chat: chatSlice,
+    realTimeNotification: rtnSlice,
     [authAPi.reducerPath]: authAPi.reducer,
     [postApi.reducerPath]: postApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
     [messageApi.reducerPath]: messageApi.reducer,
+    [fileApi.reducerPath]: fileApi.reducer,
 })
 
 // Custom middleware to handle unauthorized responses
 const unauthorizedMiddleware = (store) => (next) => (action) => {
     if (
-      action?.payload?.status === 401
+        action?.payload?.status === 401
     ) {
-      cookies.remove("social");
-      cookies.remove("social_user");
-      cookies.remove("isLoggedIn");
+        cookies.remove("social");
+        cookies.remove("social_user");
+        cookies.remove("isLoggedIn");
     }
-  
+
     return next(action);
 };
 
@@ -63,6 +64,7 @@ const store = configureStore({
             postApi.middleware,
             userApi.middleware,
             messageApi.middleware,
+            fileApi.middleware,
         ]).concat([
             unauthorizedMiddleware,
         ])
