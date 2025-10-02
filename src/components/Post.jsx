@@ -10,7 +10,7 @@ import axios from 'axios'
 import { toast } from 'sonner'
 import { setPosts, setSelectedPost } from '@/redux/postSlice'
 import { Badge } from './ui/badge'
-import { useToogleLikeQuery, useCreateCommentMutation, useDeletePostMutation, usePostBookmarksQuery } from '@/service'
+import { useToogleLikeMutation, useCreateCommentMutation, useDeletePostMutation, usePostBookmarksMutation } from '@/service'
 
 const Post = ({ post }) => {
     const [text, setText] = useState("");
@@ -20,14 +20,14 @@ const Post = ({ post }) => {
     const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
     const [postLike, setPostLike] = useState(post.likes.length);
     const [comment, setComment] = useState(post.comments);
-    const [toggleLike] = useToogleLikeQuery()
-    const [reqCreateComments, resCreateComments ]= useCreateCommentMutation()
-    const [reqDeletePost, resDeletePost ]= useDeletePostMutation()
-    const [toggleBookMark] = usePostBookmarksQuery();
+    const [toggleLike] = useToogleLikeMutation()
+    const [reqCreateComments, resCreateComments] = useCreateCommentMutation()
+    const [reqDeletePost, resDeletePost] = useDeletePostMutation()
+    const [toggleBookMark] = usePostBookmarksMutation();
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if(resCreateComments?.isSuccess){
+        if (resCreateComments?.isSuccess) {
             const updatedCommentData = [...comment, res?.data?.data?.comment];
             setComment(updatedCommentData);
 
@@ -39,21 +39,21 @@ const Post = ({ post }) => {
             toast.success(res.data.message);
             setText("");
         }
-        if(resCreateComments?.isError){
+        if (resCreateComments?.isError) {
             toast.error(res?.data?.data?.message);
         }
-    },[resCreateComments])
+    }, [resCreateComments])
 
     useEffect(() => {
-        if(resDeletePost?.isSuccess) {
+        if (resDeletePost?.isSuccess) {
             const updatedPostData = posts.filter((postItem) => postItem?._id !== post?._id);
             dispatch(setPosts(updatedPostData));
             toast.success(res?.data?.data?.message);
         }
-        if(resDeletePost?.isError) {
+        if (resDeletePost?.isError) {
             toast.error(res?.data?.data?.message);
         }
-    },[resDeletePost])
+    }, [resDeletePost])
 
     const changeEventHandler = (e) => {
         const inputText = e.target.value;
@@ -68,7 +68,7 @@ const Post = ({ post }) => {
         try {
             const action = liked ? 'dislike' : 'like';
             // const res = await axios.get(`http://localhost:5097/api/post/${post._id}/${action}`, { withCredentials: true });
-            const res = await toggleLike({post:post._id, action})
+            const res = await toggleLike({ post: post._id, action })
             console.log(res.data.data);
             if (res.data.success) {
                 const updatedLikes = liked ? postLike - 1 : postLike + 1;
@@ -140,7 +140,7 @@ const Post = ({ post }) => {
         try {
             // const res = await axios.get(`http://localhost:5097/api/post/${post?._id}/bookmark`, {withCredentials:true});
             const res = await toggleBookMark(post?._id)
-            if(res.data.success){
+            if (res.data.success) {
                 toast.success(res.data.message);
             }
         } catch (error) {
@@ -148,80 +148,82 @@ const Post = ({ post }) => {
         }
     }
     return (
-        <div className='my-8 w-full max-w-sm mx-auto'>
-            <div className='flex items-center justify-between'>
-                <div className='flex items-center gap-2'>
-                    <Avatar>
-                        <AvatarImage src={post.author?.profilePicture} alt="post_image" />
-                        <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-                    <div className='flex items-center gap-3'>
-                        <h1>{post.author?.username}</h1>
-                       {user?._id === post.author._id &&  <Badge variant="secondary">Author</Badge>}
+        <div className='my-8 w-full max-w-lg mx-auto'>
+            <div className='border-b mb-2 border-[rgb(38,38,38)] overflow-hidden'>
+                <div className='flex items-center justify-between'>
+                    <div className='flex items-center gap-2'>
+                        <Avatar>
+                            <AvatarImage src={post.author?.profilePicture} alt="post_image" />
+                            <AvatarFallback>CN</AvatarFallback>
+                        </Avatar>
+                        <div className='flex items-center gap-3'>   
+                            <h1>{post.author?.username}</h1>
+                            {user?._id == post.author._id && <Badge variant="secondary">Author</Badge>}
+                        </div>
                     </div>
-                </div>
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <MoreHorizontal className='cursor-pointer' />
-                    </DialogTrigger>
-                    <DialogContent className="flex flex-col items-center text-sm text-center">
-                        {
-                        post?.author?._id !== user?._id && <Button variant='ghost' className="cursor-pointer w-fit text-[#ED4956] font-bold">Unfollow</Button>
-                        }
-                        
-                        <Button variant='ghost' className="cursor-pointer w-fit">Add to favorites</Button>
-                        {
-                            user && user?._id === post?.author._id && <Button onClick={deletePostHandler} variant='ghost' className="cursor-pointer w-fit">Delete</Button>
-                        }
-                    </DialogContent>
-                </Dialog>
-            </div>
-            <img
-                className='rounded-sm my-2 w-full aspect-square object-cover'
-                src={post.image}
-                alt="post_img"
-            />
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <MoreHorizontal className='cursor-pointer' />
+                        </DialogTrigger>
+                        <DialogContent className="flex flex-col items-center text-sm text-center">
+                            {
+                                post?.author?._id !== user?._id && <Button variant='ghost' className="cursor-pointer w-fit text-[#ED4956] font-bold">Unfollow</Button>
+                            }
 
-            <div className='flex items-center justify-between my-2'>
-                <div className='flex items-center gap-3'>
+                            <Button variant='ghost' className="cursor-pointer w-fit">Add to favorites</Button>
+                            {
+                                user && user?._id === post?.author._id && <Button onClick={deletePostHandler} variant='ghost' className="cursor-pointer w-fit">Delete</Button>
+                            }
+                        </DialogContent>
+                    </Dialog>
+                </div>
+                <img
+                    className='rounded-sm border border-[rgb(38,38,38)]  my-2 w-full aspect-square object-cover'
+                    src={post.image}
+                    alt="post_img"
+                />
+
+                <div className='flex items-center justify-between my-2'>
+                    <div className='flex items-center gap-3'>
+                        {
+                            liked ? <FaHeart onClick={likeOrDislikeHandler} size={'24'} className='cursor-pointer text-red-600' /> : <FaRegHeart onClick={likeOrDislikeHandler} size={'22px'} className='cursor-pointer hover:text-gray-600' />
+                        }
+
+                        <MessageCircle onClick={() => {
+                            dispatch(setSelectedPost(post));
+                            setOpen(true);
+                        }} className='cursor-pointer hover:text-gray-600' />
+                        <Send className='cursor-pointer hover:text-gray-600' />
+                    </div>
+                    <Bookmark onClick={bookmarkHandler} className='cursor-pointer hover:text-gray-600' />
+                </div>
+                <span className='font-medium block mb-2'>{postLike} likes</span>
+                <p className='mb-2'>
+                    <span className=''>{post.author?.username}</span>
+                    {post.caption}
+                </p>
+                {
+                    comment.length > 0 && (
+                        <span onClick={() => {
+                            dispatch(setSelectedPost(post));
+                            setOpen(true);
+                        }} className='cursor-pointer text-sm text-gray-400'>View all {comment.length} comments</span>
+                    )
+                }
+                <CommentDialog open={open} setOpen={setOpen} />
+                <div className='flex items-center justify-between pb-4'>
+                   <input
+                        type="text"
+                        placeholder="Add a comment..."
+                        value={text}
+                        onChange={changeEventHandler}
+                        className="flex-1 placeholder-gray-500 rounded-full ps-0 ms-0 py-2 outline-none focus:ring-0 border-none"
+                    />
                     {
-                        liked ? <FaHeart onClick={likeOrDislikeHandler} size={'24'} className='cursor-pointer text-red-600' /> : <FaRegHeart onClick={likeOrDislikeHandler} size={'22px'} className='cursor-pointer hover:text-gray-600' />
+                        text && <span onClick={commentHandler} className='text-[#3BADF8] cursor-pointer'>Post</span>
                     }
 
-                    <MessageCircle onClick={() => {
-                        dispatch(setSelectedPost(post));
-                        setOpen(true);
-                    }} className='cursor-pointer hover:text-gray-600' />
-                    <Send className='cursor-pointer hover:text-gray-600' />
                 </div>
-                <Bookmark onClick={bookmarkHandler} className='cursor-pointer hover:text-gray-600' />
-            </div>
-            <span className='font-medium block mb-2'>{postLike} likes</span>
-            <p>
-                <span className='font-medium mr-2'>{post.author?.username}</span>
-                {post.caption}
-            </p>
-            {
-                comment.length > 0 && (
-                    <span onClick={() => {
-                        dispatch(setSelectedPost(post));
-                        setOpen(true);
-                    }} className='cursor-pointer text-sm text-gray-400'>View all {comment.length} comments</span>
-                )
-            }
-            <CommentDialog open={open} setOpen={setOpen} />
-            <div className='flex items-center justify-between'>
-                <input
-                    type="text"
-                    placeholder='Add a comment...'
-                    value={text}
-                    onChange={changeEventHandler}
-                    className='outline-none text-sm w-full'
-                />
-                {
-                    text && <span onClick={commentHandler} className='text-[#3BADF8] cursor-pointer'>Post</span>
-                }
-
             </div>
         </div>
     )

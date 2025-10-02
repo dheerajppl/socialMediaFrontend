@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
-const baseUrl = 'http://localhost:5097/api';
+const baseUrl = 'http://localhost:5000/api';
 
 export const authAPi = createApi({
     tagTypes: ["auth"],
@@ -13,8 +13,8 @@ export const authAPi = createApi({
                 url: '/user/login',
                 method: 'POST',
                 body: payload
-             }),
-        invalidatesTags: ["auth"],
+            }),
+            invalidatesTags: ["auth"],
         }),
         registerAuth: builder.mutation({
             query: (payload) => ({
@@ -22,32 +22,32 @@ export const authAPi = createApi({
                 method: 'POST',
                 body: payload
             }),
-            invalidatesTags: ["auth"],    
+            invalidatesTags: ["auth"],
         }),
         logoutAuth: builder.mutation({
             query: (payload) => ({
                 url: '/user/logout',
                 method: 'POST',
                 body: payload
-            }),  
+            }),
             invalidatesTags: ["auth"],
         }),
     }),
 });
-export const { 
-    useLoginAuthMutation, 
+export const {
+    useLoginAuthMutation,
     useRegisterAuthMutation,
     useLogoutAuthMutation
 } = authAPi;
 
-export const userApi =createApi({
+export const userApi = createApi({
     tagTypes: ["user"],
     reducerPath: "userApi",
     baseQuery: fetchBaseQuery({
         baseUrl: `${baseUrl}/`,
         prepareHeaders: (headers, { getState }) => {
-            if(getState()?.auth?.userToken){
-                headers.set('Authorization',  getState()?.auth?.userToken);
+            if (getState()?.auth?.userToken) {
+                headers.set('Authorization', getState()?.auth?.userToken);
             }
             return headers;
         }
@@ -83,7 +83,7 @@ export const userApi =createApi({
             providesTags: ["user"],
         }),
 
-    }),                    
+    }),
 })
 export const {
     useUserSuggestQuery,
@@ -92,14 +92,14 @@ export const {
     useUserFollowOrUnzfollowQuery
 } = userApi;
 
-export const postApi =createApi({
+export const postApi = createApi({
     tagTypes: ["post"],
     reducerPath: "postApi",
     baseQuery: fetchBaseQuery({
         baseUrl: `${baseUrl}/`,
         prepareHeaders: (headers, { getState }) => {
-            if(getState()?.auth?.userToken){
-                headers.set('Authorization',  getState()?.auth?.userToken);
+            if (getState()?.auth?.userToken) {
+                headers.set('Authorization', getState()?.auth?.userToken);
             }
             return headers;
         }
@@ -136,11 +136,11 @@ export const postApi =createApi({
             }),
             providesTags: ["post"],
         }),
-        toogleLike: builder.query({
-            query: ({action,id}) => ({
+        toogleLike: builder.mutation({
+            query: ({ action, id }) => ({
                 url: `/post/${action}/${id}`,
-                method: 'GET',
-                }),
+                method: 'POST',
+            }),
             providesTags: ["post"],
         }),
         createComment: builder.mutation({
@@ -148,7 +148,7 @@ export const postApi =createApi({
                 url: '/comment/create',
                 method: 'POST',
                 body: payload
-                }),
+            }),
             providesTags: ["post"],
         }),
         getComment: builder.query({
@@ -156,37 +156,37 @@ export const postApi =createApi({
                 url: `/comment/list/${id}`,
                 method: 'GET',
                 body: payload
-                }),
+            }),
             providesTags: ["post"],
         }),
-        postBookmarks: builder.query({
+        postBookmarks: builder.mutation({
             query: (id) => ({
                 url: `/post/bookmarks/${id}`,
-                method: 'GET',
+                method: 'POST',
             }),
             providesTags: ["post"],
         })
-    }),                    
+    }),
 })
 export const {
     useCreatePostMutation,
     useGetAllPostsMutation,
     useGetPostsMutation,
     useDeletePostMutation,
-    useToogleLikeQuery,
+    useToogleLikeMutation,
     useCreateCommentMutation,
     useGetCommentQuery,
-    usePostBookmarksQuery,
+    usePostBookmarksMutation,
 } = postApi;
 
-export const messageApi =createApi({
+export const messageApi = createApi({
     tagTypes: ["message"],
     reducerPath: "messageApi",
     baseQuery: fetchBaseQuery({
         baseUrl: `${baseUrl}/`,
         prepareHeaders: (headers, { getState }) => {
-            if(getState()?.auth?.userToken){
-                headers.set('Authorization',  getState()?.auth?.userToken);
+            if (getState()?.auth?.userToken) {
+                headers.set('Authorization', getState()?.auth?.userToken);
             }
             return headers;
         }
@@ -200,7 +200,7 @@ export const messageApi =createApi({
             providesTags: ["message"],
         }),
         sendMessages: builder.mutation({
-            query: ({payload,id}) => ({
+            query: ({ payload, id }) => ({
                 url: `/message/send/${id}`,
                 method: 'POST',
                 body: payload
@@ -208,10 +208,106 @@ export const messageApi =createApi({
             invalidatesTags: ["message"],
         }),
 
-    }),                    
+    }),
 })
 export const {
     useGetAllMessagesQuery,
     useSendMessagesMutation
 } = messageApi;
+
+export const fileApi = createApi({
+    tagTypes: ["file"],
+    reducerPath: "fileApi",
+    baseQuery: fetchBaseQuery({
+        baseUrl: `${baseUrl}/`,
+        prepareHeaders: (headers, { getState }) => {
+            if (getState()?.auth?.userToken) {
+                headers.set('Authorization', getState()?.auth?.userToken);
+            }
+            return headers;
+        }
+    }),
+    endpoints: (builder) => ({
+        getPreSignedUrl: builder.query({
+            query: ({ fileName, fileType, fileSize, folderName }) => ({
+                url: `/file/generate-presigned-url?fileName=${fileName}&fileType=${fileType}&fileSize=${fileSize}&folderName=${folderName}`,
+                method: "GET",
+            }),
+        }),
+        uploadToS3: builder.mutation({
+            async queryFn({ uploadUrl, file }) {
+                try {
+                    const res = await fetch(uploadUrl, {
+                        method: "PUT",
+                        body: file,
+                        headers: { "Content-Type": file.type },
+                    });
+
+                    if (!res.ok) {
+                        return {
+                            error: {
+                                status: "CUSTOM_ERROR",
+                                data: await res.text(),
+                            }
+                        };
+                    }
+
+                    return { data: undefined };
+                } catch (err) {
+                    return {
+                        error: {
+                            status: "CUSTOM_ERROR",
+                            data: err,
+                        }
+                    };
+                }
+            },
+        }),
+
+        deleteFile: builder.mutation({
+            query: ({ fileId }) => ({
+                url: `/file/delete/${fileId}`,
+                method: "DELETE",
+            }),
+        }),
+        getFile: builder.query({
+            query: ({ fileId }) => ({
+                url: `/file/get/${fileId}`,
+                method: "GET",
+            }),
+        }),
+        uploadImage: builder.mutation({
+            query: (data) => ({
+                url: "/file/add-img",
+                method: "POST",
+                body: data,
+            }),
+        }),
+        uploadImageMultiple: builder.mutation({
+            query: (data) => ({
+                url: "/file/add-multiple-img",
+                method: "POST",
+                body: data,
+            }),
+        }),
+        deleteCloudinaryImg: ({
+            query({ folder_name, id }) {
+                return {
+                    url: `/file/img-delete?folder_name=${folder_name}&id=${id}`,
+                    method: "DELETE",
+                };
+            },
+        }),
+    }),
+
+})
+export const {
+    useLazyGetPreSignedUrlQuery,
+    useUploadToS3Mutation,
+    useDeleteFileMutation,
+    useDeleteCloudinaryImgMutation,
+    useLazyGetFileQuery,
+    useUploadImageMutation,
+    useUploadImageMultipleMutation,
+} = fileApi;
 

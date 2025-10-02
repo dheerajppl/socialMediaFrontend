@@ -53,6 +53,10 @@ function App() {
   const { socket } = useSelector(store => store.socketio);
   const dispatch = useDispatch();
 
+    useEffect(() => {
+    document.documentElement.classList.add("dark");
+  }, []);
+
   useEffect(() => {
     if (user) {
       const socketio = io('http://localhost:5097', {

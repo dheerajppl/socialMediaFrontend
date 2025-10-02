@@ -14,14 +14,14 @@ const ChatPage = () => {
     const [textMessage, setTextMessage] = useState("");
     const { user, suggestedUsers, selectedUser } = useSelector(store => store.auth);
     const { onlineUsers, messages } = useSelector(store => store.chat);
-    const [ reqSendMessage, resSendMessage ] = useSendMessagesMutation();
+    const [reqSendMessage, resSendMessage] = useSendMessagesMutation();
     const dispatch = useDispatch();
 
     const sendMessageHandler = async (receiverId) => {
-        console.log('receiverId',receiverId )
-        console.log('textMessage',textMessage )
+        console.log('receiverId', receiverId)
+        console.log('textMessage', textMessage)
         const payload = {
-            message:textMessage
+            message: textMessage
         }
         reqSendMessage({ payload, id: receiverId });
         // try {
@@ -41,32 +41,32 @@ const ChatPage = () => {
     }
 
     useEffect(() => {
-        if(resSendMessage?.isSuccess){
+        if (resSendMessage?.isSuccess) {
             dispatch(setMessages([...messages, resSendMessage?.data?.data]));
             setTextMessage("");
         }
-        if(resSendMessage?.isError){
+        if (resSendMessage?.isError) {
             console.log(resSendMessage?.error?.message);
         }
-    },[resSendMessage])
+    }, [resSendMessage])
 
     useEffect(() => {
         return () => {
             dispatch(setSelectedUser(null));
         }
-    },[]);
+    }, []);
 
     return (
-        <div className='flex ml-[16%] h-screen'>
+        <div className='flex ml-[19%] h-screen'>
             <section className='w-full md:w-1/4 my-8'>
                 <h1 className='font-bold mb-4 px-3 text-xl'>{user?.username}</h1>
-                <hr className='mb-4 border-gray-300' />
+                <hr className='mb-4 border-gray-300 dark:border-[rgb(38,38,38)]' />
                 <div className='overflow-y-auto h-[80vh]'>
                     {
                         suggestedUsers.map((suggestedUser) => {
                             const isOnline = onlineUsers.includes(suggestedUser?._id);
                             return (
-                                <div onClick={() => dispatch(setSelectedUser(suggestedUser))} className='flex gap-3 items-center p-3 hover:bg-gray-50 cursor-pointer'>
+                                <div onClick={() => dispatch(setSelectedUser(suggestedUser))} className='flex gap-3 items-center p-3 hover:bg-gray-50 cursor-pointer dark:hover:bg-[rgb(38,38,38)] rounded-lg mb-2' key={suggestedUser?._id}>
                                     <Avatar className='w-14 h-14'>
                                         <AvatarImage src={suggestedUser?.profilePicture} />
                                         <AvatarFallback>CN</AvatarFallback>
@@ -84,8 +84,8 @@ const ChatPage = () => {
             </section>
             {
                 selectedUser ? (
-                    <section className='flex-1 border-l border-l-gray-300 flex flex-col h-full'>
-                        <div className='flex gap-3 items-center px-3 py-2 border-b border-gray-300 sticky top-0 bg-white z-10'>
+                    <section className='flex-1 border-l border-l-gray-300 flex flex-col h-full dark:border-[rgb(38,38,38)]'>
+                        <div className='flex gap-3 items-center px-3 py-2 border-b border-gray-300 sticky top-0 z-10 dark:border-[rgb(38,38,38)]'>
                             <Avatar>
                                 <AvatarImage src={selectedUser?.profilePicture} alt='profile' />
                                 <AvatarFallback>CN</AvatarFallback>
@@ -95,7 +95,7 @@ const ChatPage = () => {
                             </div>
                         </div>
                         <Messages selectedUser={selectedUser} />
-                        <div className='flex items-center p-4 border-t border-t-gray-300'>
+                        <div className='flex items-center p-4 border-t border-t-gray-300 dark:border-[rgb(38,38,38)]'>
                             <Input value={textMessage} onChange={(e) => setTextMessage(e.target.value)} type="text" className='flex-1 mr-2 focus-visible:ring-transparent' placeholder="Messages..." />
                             <Button onClick={() => sendMessageHandler(selectedUser?._id)}>Send</Button>
                         </div>
